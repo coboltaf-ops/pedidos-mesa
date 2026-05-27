@@ -1,15 +1,27 @@
 [
   {
-    "id": "manual-test-1779923422",
-    "nro_correlativo": 99,
-    "fecha_creacion": "2026-05-27T23:10:22.000Z",
+    "id": "validate-1779923592129944000",
+    "nro_correlativo": 1,
+    "fecha_creacion": "2026-05-27T23:13:12.000Z",
     "tipo_cliente": "Persona Natural",
-    "nombre": "CLIENTE MANUAL TEST",
+    "nombre": "TEST VALIDACIÓN",
     "tipo_identificacion": "CC",
-    "nro_documento": "9999999999",
-    "correo": "manual@test.com",
-    "nro_movil": "3999999999",
-    "ciudad": "Test City",
+    "nro_documento": "1234567890",
+    "correo": "validacion@test.com",
+    "nro_movil": "3001234567",
+    "ciudad": "Test",
     "situacion": "Activo"
+  },
+  {
+    "id": "50208f69-35e4-421f-8082-b2c9889e427e",
+    "nro_correlativo": 2,
+    "fecha_creacion": "2026-05-27T23:22:29.971Z",
+    "situacion": "Activo",
+    "tipo_cliente": "Persona Natural",
+    "tipo_identificacion": "CC",
+    "nombre": "TEST_1779924149385",
+    "nro_documento": "9924149385",
+    "correo": "test1779924149385@test.com",
+    "nro_movil": "3001234567"
   }
 ]
