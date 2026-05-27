@@ -35,27 +35,48 @@ export default function ClientesComidasPage() {
   }
 
   useEffect(() => {
-    if (clientes.length === 0) {
-      fetch('/api/data/clientes-comidas')
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setClientes(data)
-            saveToStorage(data)
-          } else {
-            const stored = loadFromStorage()
-            if (stored.length > 0) {
-              setClientes(stored)
-            }
-          }
-        })
-        .catch((err) => {
-          console.error('Error cargando clientes:', err)
-          const stored = loadFromStorage()
+    const loadClientes = async () => {
+      console.log('Cargando clientes...')
+
+      // Primero intenta cargar de localStorage
+      const stored = loadFromStorage()
+      console.log('Clientes en localStorage:', stored.length)
+
+      if (stored.length > 0) {
+        console.log('Usando datos de localStorage')
+        setClientes(stored)
+        return
+      }
+
+      // Si no hay en localStorage, intenta cargar del servidor
+      try {
+        console.log('Intentando cargar del servidor...')
+        const res = await fetch('/api/data/clientes-comidas')
+        const data = await res.json()
+        console.log('Datos del servidor:', data)
+
+        if (Array.isArray(data) && data.length > 0) {
+          console.log('Usando datos del servidor')
+          setClientes(data)
+          saveToStorage(data)
+        } else {
+          console.log('Servidor vacío, usando localStorage')
           if (stored.length > 0) {
             setClientes(stored)
           }
-        })
+        }
+      } catch (err) {
+        console.error('Error cargando del servidor:', err)
+        if (stored.length > 0) {
+          console.log('Usando datos de localStorage después del error')
+          setClientes(stored)
+        }
+      }
+    }
+
+    // Solo cargar si el estado está vacío
+    if (clientes.length === 0) {
+      loadClientes()
     }
   }, [])
 
