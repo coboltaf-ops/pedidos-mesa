@@ -21,15 +21,19 @@ type UsuarioRecord = { id: string; usuario: string; clave?: string; [k: string]:
 export async function GET(_req: NextRequest, ctx: RouteContext) {
   try {
     const { collection } = await ctx.params
+    console.log(`[API] GET ${collection}`)
+
     if (!ALLOWED.includes(collection)) {
       return NextResponse.json({ error: 'Colección no permitida' }, { status: 400 })
     }
+
     if (collection === 'referencias' || collection === 'pagos-proveedores' || collection === 'control-bancario') {
       const data = await readJson(collection, {})
       return NextResponse.json(data)
     }
+
     const data = await readCollection(collection)
-    // SEGURIDAD: nunca exponer claves de usuarios en respuestas GET
+
     if (collection === 'usuarios' && Array.isArray(data)) {
       const sanitized = (data as UsuarioRecord[]).map(u => {
         const { clave: _omit, ...rest } = u
@@ -38,11 +42,17 @@ export async function GET(_req: NextRequest, ctx: RouteContext) {
       })
       return NextResponse.json(sanitized)
     }
-    return NextResponse.json(data)
+
+    return NextResponse.json(data ?? [])
   } catch (err) {
-    console.error('Error en GET:', err)
-    return NextResponse.json([], { status: 200 })
+    console.error(`[API] Error en GET ${ctx.params}:`, err)
+    // Devolver array vacío en caso de error
+    return NextResponse.json([])
   }
+}
+
+export async function OPTIONS(_req: NextRequest, ctx: RouteContext) {
+  return NextResponse.json({ ok: true })
 }
 
 export async function PUT(req: NextRequest, ctx: RouteContext) {

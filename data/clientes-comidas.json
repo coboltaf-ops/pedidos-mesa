@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "id": "manual-test-1779923422",
+    "nro_correlativo": 99,
+    "fecha_creacion": "2026-05-27T23:10:22.000Z",
+    "tipo_cliente": "Persona Natural",
+    "nombre": "CLIENTE MANUAL TEST",
+    "tipo_identificacion": "CC",
+    "nro_documento": "9999999999",
+    "correo": "manual@test.com",
+    "nro_movil": "3999999999",
+    "ciudad": "Test City",
+    "situacion": "Activo"
+  }
+]
