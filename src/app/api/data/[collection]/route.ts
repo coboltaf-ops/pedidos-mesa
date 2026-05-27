@@ -19,25 +19,30 @@ type RouteContext = { params: Promise<{ collection: string }> }
 type UsuarioRecord = { id: string; usuario: string; clave?: string; [k: string]: unknown }
 
 export async function GET(_req: NextRequest, ctx: RouteContext) {
-  const { collection } = await ctx.params
-  if (!ALLOWED.includes(collection)) {
-    return NextResponse.json({ error: 'Colección no permitida' }, { status: 400 })
-  }
-  if (collection === 'referencias' || collection === 'pagos-proveedores' || collection === 'control-bancario') {
-    const data = await readJson(collection, {})
+  try {
+    const { collection } = await ctx.params
+    if (!ALLOWED.includes(collection)) {
+      return NextResponse.json({ error: 'Colección no permitida' }, { status: 400 })
+    }
+    if (collection === 'referencias' || collection === 'pagos-proveedores' || collection === 'control-bancario') {
+      const data = await readJson(collection, {})
+      return NextResponse.json(data)
+    }
+    const data = await readCollection(collection)
+    // SEGURIDAD: nunca exponer claves de usuarios en respuestas GET
+    if (collection === 'usuarios' && Array.isArray(data)) {
+      const sanitized = (data as UsuarioRecord[]).map(u => {
+        const { clave: _omit, ...rest } = u
+        void _omit
+        return rest
+      })
+      return NextResponse.json(sanitized)
+    }
     return NextResponse.json(data)
+  } catch (err) {
+    console.error('Error en GET:', err)
+    return NextResponse.json([], { status: 200 })
   }
-  const data = await readCollection(collection)
-  // SEGURIDAD: nunca exponer claves de usuarios en respuestas GET
-  if (collection === 'usuarios' && Array.isArray(data)) {
-    const sanitized = (data as UsuarioRecord[]).map(u => {
-      const { clave: _omit, ...rest } = u
-      void _omit
-      return rest
-    })
-    return NextResponse.json(sanitized)
-  }
-  return NextResponse.json(data)
 }
 
 export async function PUT(req: NextRequest, ctx: RouteContext) {
