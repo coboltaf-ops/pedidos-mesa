@@ -112,12 +112,23 @@ export default function ClientesComidasPage() {
       saveToStorage(newClientes)
       setClientes(newClientes)
 
-      // Intentar sincronizar con servidor (pero no esperar)
-      fetch('/api/data/clientes-comidas', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newClientes),
-      }).catch((err) => console.warn('Servidor no disponible:', err))
+      // Sincronizar con servidor (esperar respuesta con timeout)
+      try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 3000)
+
+        const response = await fetch('/api/data/clientes-comidas', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newClientes),
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeout)
+        console.log('Servidor respondió:', response.status)
+      } catch (err) {
+        console.warn('Servidor no respondió a tiempo, datos guardados localmente:', err)
+      }
 
       // Limpiar formulario y cerrarlo
       setShowForm(false)
