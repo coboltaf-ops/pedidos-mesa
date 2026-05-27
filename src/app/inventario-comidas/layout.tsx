@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { InventarioSidebar } from '@/shared/components/inventario-sidebar'
 import { SidebarProvider } from '@/shared/context/sidebar-context'
 import { usePollingProductosComidas } from '@/features/inventario-comidas/hooks/use-polling-productos-comidas'
@@ -33,7 +34,16 @@ function InventarioComidasDataLoader() {
 }
 
 function InventarioComidasLayoutContent({ children }: { children: React.ReactNode }) {
-  const [sidebarVisible, setSidebarVisible] = useState(true)
+  const [sidebarVisible, setSidebarVisible] = useState(false)
+  const pathname = usePathname()
+
+  // Ocultar sidebar automáticamente cuando navegas a un módulo específico
+  useEffect(() => {
+    const isModulePage = pathname && pathname.match(/\/inventario-comidas\/(clientes|proveedores|productos|formulas|ordenes-compra|recepcion|bodegas|salidas|ajustes|inventario-fisico|datos-empresa|usuarios)$/)
+    if (isModulePage) {
+      setSidebarVisible(false)
+    }
+  }, [pathname])
 
   return (
     <div style={{ minHeight: '100vh', background: '#000', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex' }}>
@@ -47,17 +57,19 @@ function InventarioComidasLayoutContent({ children }: { children: React.ReactNod
               position: 'fixed',
               top: '20px',
               left: '20px',
-              padding: '12px 20px',
+              padding: '14px 24px',
               background: '#ea580c',
               color: '#fff',
               border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
               fontWeight: 'bold',
+              fontSize: '14px',
               zIndex: 50,
+              boxShadow: '0 4px 12px rgba(234, 88, 12, 0.3)',
             }}
           >
-            ☰ Regresar al Menú
+            ☰ Regresar al Menú Principal
           </button>
         )}
         {children}
