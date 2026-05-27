@@ -1,0 +1,239 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { useCurrentUserStore } from '@/features/usuarios/store/current-user-store'
+import { useModulosSistemaStore } from '@/features/modulos-sistema/store/modulos-sistema-store'
+import { useCompanyLogo } from '@/shared/hooks/use-company-logo'
+import { useEmpresaStore } from '@/features/datos-empresa/store/empresa-store'
+
+export function EcosystemSidebar() {
+  const pathname = usePathname()
+  const t = useTranslations('nav')
+  const user = useCurrentUserStore((s) => s.user)
+  const modulosEstado = useModulosSistemaStore((s) => s.modulos)
+  const companyLogo = useCompanyLogo()
+  const empresaActiva = useEmpresaStore((s) => s.empresas[0])
+
+  const [sidebarOculto, setSidebarOculto] = useState(false)
+  const [adminOpen, setAdminOpen] = useState(true)
+  const [comidasOpen, setComidasOpen] = useState(pathname.startsWith('/inventario-comidas'))
+  const [portalOpen, setPortalOpen] = useState(pathname.startsWith('/comidas'))
+  const [configOpen, setConfigOpen] = useState(true)
+
+  const isAdmin = ['admin', 'administrador'].includes(user?.rol?.toLowerCase() || '')
+  const isModuloActivo = (href: string) => {
+    const id = href.replace('/', '')
+    const estado = modulosEstado.find((m) => m.id === id)
+    return estado ? estado.activo : true
+  }
+
+  const RUTAS_SIN_SIDEBAR = [
+    '/comidas/landing',
+    '/comidas/qr',
+  ]
+
+  const ocultarPorRuta = RUTAS_SIN_SIDEBAR.some((r) => pathname.startsWith(r))
+
+  useEffect(() => {
+    setSidebarOculto(ocultarPorRuta)
+  }, [ocultarPorRuta])
+
+  const isActive = (href: string) => {
+    if (href.startsWith('/inventario-comidas') || href.startsWith('/comidas')) {
+      return pathname === href
+    }
+    return pathname === href || pathname.startsWith(href + '/')
+  }
+
+  const MenuItemLink = ({
+    name,
+    href,
+    icon,
+    external,
+  }: {
+    name: string
+    href: string
+    icon: string
+    external?: boolean
+  }) => {
+    const active = isActive(href)
+    if (external) {
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block px-4 py-2 rounded-lg text-white text-sm hover:bg-white/10 transition-colors"
+          style={{ color: active ? '#ea580c' : '#fff' }}
+        >
+          {icon} {name}
+        </a>
+      )
+    }
+    return (
+      <Link
+        href={href}
+        className="block px-4 py-2 rounded-lg text-white text-sm hover:bg-white/10 transition-colors"
+        style={{ color: active ? '#ea580c' : '#fff', fontWeight: active ? 600 : 400 }}
+      >
+        {icon} {name}
+      </Link>
+    )
+  }
+
+  const CollapseSection = ({
+    label,
+    color,
+    open,
+    onToggle,
+    children,
+  }: {
+    label: string
+    color?: string
+    open: boolean
+    onToggle: () => void
+    children: React.ReactNode
+  }) => (
+    <div>
+      <button
+        onClick={onToggle}
+        className="w-full px-4 py-2 text-left text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-white/5 transition-colors flex items-center justify-between"
+        style={{ color: color || '#ccc', marginTop: '16px' }}
+      >
+        <span>{label}</span>
+        <span className="text-xs">{open ? '▼' : '▶'}</span>
+      </button>
+      {open && <div className="mt-1 space-y-1">{children}</div>}
+    </div>
+  )
+
+  return (
+    <>
+      <button
+        onClick={() => setSidebarOculto(!sidebarOculto)}
+        className="fixed top-3 z-[60] w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-lg transition-all hover:scale-105"
+        style={{
+          left: sidebarOculto ? 12 : 268,
+          background: '#000',
+          border: '2px solid rgba(255,255,255,0.3)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        }}
+        title={sidebarOculto ? 'Mostrar menú lateral' : 'Ocultar menú lateral'}
+      >
+        {sidebarOculto ? '☰' : '✕'}
+      </button>
+
+      <aside
+        className={`fixed left-0 top-0 bottom-0 w-64 border-r border-white/15 z-50 flex flex-col transition-transform duration-300 overflow-y-auto ${
+          sidebarOculto ? '-translate-x-full' : 'translate-x-0'
+        }`}
+        style={{ background: '#000' }}
+      >
+        <div className="px-6 py-5 shrink-0 flex flex-col items-center gap-2">
+          <div
+            className="rounded-xl flex items-center justify-center overflow-hidden"
+            style={{
+              background: '#ffffff',
+              border: '1px solid rgba(255,255,255,0.2)',
+              padding: 6,
+              width: 140, minWidth: 140, minHeight: 140, display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <img src={companyLogo} alt="Logo Empresa" style={{ maxHeight: 140, maxWidth: 140, objectFit: 'contain' }} />
+          </div>
+          <p className="text-white font-semibold text-sm tracking-wide text-center">'Happy Express'</p>
+        </div>
+
+        <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
+          <MenuItemLink name="📊 Dashboard" href="/dashboard" icon="" />
+
+          <CollapseSection
+            label="ADMINISTRACIÓN"
+            color="#ccc"
+            open={adminOpen}
+            onToggle={() => setAdminOpen(!adminOpen)}
+          >
+            {isModuloActivo('/pagos-proveedores') && <MenuItemLink name="Pagos Proveedores" href="/pagos-proveedores" icon="💳" />}
+            {isModuloActivo('/control-bancario') && <MenuItemLink name="Control Bancario" href="/control-bancario" icon="🏦" />}
+            {isModuloActivo('/centros-costo') && <MenuItemLink name="Centros Costo" href="/centros-costo" icon="💰" />}
+            {isModuloActivo('/tareas') && <MenuItemLink name="Tareas" href="/tareas" icon="📝" />}
+            {isModuloActivo('/personal-empresa') && <MenuItemLink name="Personal Empresa" href="/personal-empresa" icon="👥" />}
+            {isModuloActivo('/correos-enviados') && <MenuItemLink name="Correos Enviados" href="/correos-enviados" icon="📧" />}
+            {isModuloActivo('/kardex') && <MenuItemLink name="Kardex" href="/kardex" icon="📒" />}
+            {isModuloActivo('/toma-inventario-fisico') && <MenuItemLink name="Toma Inv. Físico" href="/toma-inventario-fisico" icon="📋" />}
+            {isModuloActivo('/pedidos') && <MenuItemLink name="Pedidos" href="/pedidos" icon="📄" />}
+            {isModuloActivo('/asistente') && <MenuItemLink name="Asistente" href="/asistente" icon="🤖" />}
+            <MenuItemLink
+              name="CRM Comercial"
+              href={`https://crmspin.vercel.app/?from=inventario&returnUrl=${encodeURIComponent(
+                'https://gestioninventario-dun.vercel.app/dashboard',
+              )}`}
+              icon="🎯"
+              external
+            />
+          </CollapseSection>
+
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '16px 0' }} />
+
+          <CollapseSection
+            label="🍽️ INVENTARIO COMIDAS"
+            color="#ea580c"
+            open={comidasOpen}
+            onToggle={() => setComidasOpen(!comidasOpen)}
+          >
+            <div style={{ borderLeft: '3px solid #ea580c', paddingLeft: '12px', marginLeft: '-4px' }}>
+              <MenuItemLink name="Clientes" href="/inventario-comidas/clientes" icon="👥" />
+              <MenuItemLink name="Proveedores" href="/inventario-comidas/proveedores" icon="🏢" />
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '8px 0' }} />
+              <MenuItemLink name="Productos" href="/inventario-comidas/productos" icon="📦" />
+              <MenuItemLink name="Fórmulas" href="/inventario-comidas/formulas" icon="📖" />
+              <MenuItemLink name="Órdenes de Compra" href="/inventario-comidas/ordenes-compra" icon="🛒" />
+              <MenuItemLink name="Recepción Facturas" href="/inventario-comidas/recepcion" icon="📋" />
+              <MenuItemLink name="Bodegas" href="/inventario-comidas/bodegas" icon="🏪" />
+              <MenuItemLink name="Salidas" href="/inventario-comidas/salidas" icon="📤" />
+              <MenuItemLink name="Ajustes" href="/inventario-comidas/ajustes" icon="🔧" />
+              <MenuItemLink name="Inv. Físico" href="/inventario-comidas/inventario-fisico" icon="📊" />
+              <MenuItemLink name="Datos Empresa" href="/inventario-comidas/datos-empresa" icon="🏛️" />
+              <MenuItemLink name="Usuarios" href="/inventario-comidas/usuarios" icon="👤" />
+            </div>
+          </CollapseSection>
+
+          <CollapseSection
+            label="🍕 PORTAL COMIDAS"
+            color="#ea580c"
+            open={portalOpen}
+            onToggle={() => setPortalOpen(!portalOpen)}
+          >
+            <div style={{ borderLeft: '3px solid #ea580c', paddingLeft: '12px', marginLeft: '-4px' }}>
+              <MenuItemLink name="👨‍🍳 Cocina" href="/comidas/cocina" icon="" />
+              <MenuItemLink name="💰 Caja" href="/comidas/caja" icon="" />
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '12px 0' }} />
+              <MenuItemLink name="🔗 Landing Menu" href="/comidas/landing" icon="" external />
+              <MenuItemLink name="📱 QR Pedidos" href="/comidas/qr" icon="" external />
+            </div>
+          </CollapseSection>
+
+          {isAdmin && (
+            <>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '16px 0' }} />
+              <CollapseSection
+                label="CONFIGURACIÓN"
+                color="#999"
+                open={configOpen}
+                onToggle={() => setConfigOpen(!configOpen)}
+              >
+                {isModuloActivo('/datos-empresa') && <MenuItemLink name="Datos Empresa" href="/datos-empresa" icon="🏛️" />}
+                {isModuloActivo('/usuarios') && <MenuItemLink name="Usuarios" href="/usuarios" icon="👤" />}
+                {isModuloActivo('/modulos-sistema') && <MenuItemLink name="Módulos Sistema" href="/modulos-sistema" icon="🗂️" />}
+                {isModuloActivo('/referencias') && <MenuItemLink name="Referencias" href="/referencias" icon="⚙️" />}
+              </CollapseSection>
+            </>
+          )}
+        </nav>
+      </aside>
+    </>
+  )
+}

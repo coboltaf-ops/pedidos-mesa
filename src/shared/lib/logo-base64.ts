@@ -1,0 +1,2 @@
+// Logo Happy Express - SVG robusto cuadrado
+export const LOGO_BASE64 = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23000%22/%3E%3Ctext x=%2250%22 y=%2235%22 font-size=%2218%22 font-weight=%22bold%22 fill=%22%23ea580c%22 text-anchor=%22middle%22 font-family=%22Arial%22%3EHappy%3C/text%3E%3Ctext x=%2250%22 y=%2260%22 font-size=%2214%22 fill=%22%23fff%22 text-anchor=%22middle%22 font-family=%22Arial%22%3EExpress%3C/text%3E%3C/svg%3E'
