@@ -56,15 +56,16 @@ export async function OPTIONS(_req: NextRequest, ctx: RouteContext) {
 }
 
 export async function PUT(req: NextRequest, ctx: RouteContext) {
+  // VERCEL SERVERLESS: Los datos se guardan SOLO en localStorage del cliente
+  // No intentar escribir en filesystem que no persiste en Vercel
+  // Simplemente devolver ok: true para que el cliente sepa que "se guardó"
+  if (process.env.VERCEL) {
+    return NextResponse.json({ ok: true })
+  }
+
+  // LOCALHOST: Guardar en filesystem normalmente
   try {
     const { collection } = await ctx.params
-
-    // VERCEL: Los datos se guardan SOLO en localStorage del cliente
-    // No usar filesystem que no persiste en serverless
-    if (process.env.VERCEL) {
-      return NextResponse.json({ ok: true })
-    }
-
     if (!ALLOWED.includes(collection)) {
       return NextResponse.json({ error: 'Colección no permitida' }, { status: 400 })
     }
@@ -80,8 +81,6 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
       if (collection === 'referencias' || collection === 'pagos-proveedores' || collection === 'control-bancario') {
         await writeJson(collection, body)
       } else if (collection === 'usuarios' && Array.isArray(body)) {
-        // SEGURIDAD: el cliente NO maneja claves. Si un usuario llega sin clave o vacía,
-        // se preserva la clave existente del Blob. Solo se sobrescribe si llega clave nueva.
         const existing = await readCollection<UsuarioRecord>('usuarios', [])
         const existingById = new Map(existing.map(u => [u.id, u]))
         const merged = (body as UsuarioRecord[]).map(u => {
@@ -103,7 +102,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
       return NextResponse.json({ ok: true, note: 'Datos persistidos en cliente' }, { status: 200 })
     }
   } catch (err) {
-    console.error('[PUT] Error no manejado:', err)
+    console.error('[PUT] Error:', err)
     return NextResponse.json({ ok: true }, { status: 200 })
   }
 }
