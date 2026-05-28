@@ -21,5 +21,17 @@
     "nro_documento": "9924550639",
     "correo": "final1779924550639@test.com",
     "nro_movil": "3001234567"
+  },
+  {
+    "id": "f28c9f77-96bf-43ae-9f99-dff317df99ef",
+    "nro_correlativo": 4,
+    "fecha_creacion": "2026-05-28T02:05:37.476Z",
+    "situacion": "Activo",
+    "tipo_cliente": "Persona Natural",
+    "tipo_identificacion": "CC",
+    "nombre": "FINAL_TEST_1779933936319",
+    "nro_documento": "9933936319",
+    "correo": "final1779933936319@test.com",
+    "nro_movil": "3001234567"
   }
 ]
