@@ -5,12 +5,10 @@ import { useDatosEmpresaComidasStore } from '@/features/inventario-comidas/store
 
 export function InventarioComidasDataInitializer() {
   useEffect(() => {
-    // Hydrate datos empresa from localStorage immediately on mount
+    // Hydrate datos empresa comidas from localStorage BEFORE other hooks
     const hydrate = useDatosEmpresaComidasStore.getState().hydrate
-    if (hydrate) {
-      hydrate()
-      console.log('[InventarioComidasDataInitializer] Hydrated datos-empresa-comidas')
-    }
+    hydrate()
+    console.log('🔧 InventarioComidasDataInitializer: Hydrating datos empresa comidas')
   }, [])
 
   return null

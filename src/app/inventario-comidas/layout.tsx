@@ -21,6 +21,15 @@ import { usePollingDatosEmpresaComidas } from '@/features/inventario-comidas/hoo
 import { usePollingClientesComidas } from '@/features/inventario-comidas/hooks/use-polling-clientes-comidas'
 
 function InventarioComidasDataLoader() {
+  return (
+    <>
+      <InventarioComidasDataInitializer />
+      <DataLoadingHooks />
+    </>
+  )
+}
+
+function DataLoadingHooks() {
   usePollingProductosComidas(5000)
   usePollingFormulasComidas(5000)
   usePollingProveedoresComidas(5000)
