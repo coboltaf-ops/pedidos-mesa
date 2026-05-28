@@ -13,7 +13,6 @@ import { useTipoInventarioSesion } from '@/features/contexto-sesion/store/tipo-i
 import { TipoInventarioBadge } from '@/features/contexto-sesion/components/tipo-inventario-badge'
 import { useEmpresaStore } from '@/features/datos-empresa/store/empresa-store'
 import { EcosystemSidebar } from '@/shared/components/ecosystem-sidebar'
-import { DataInitializer } from '@/shared/components/data-initializer'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -66,7 +65,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ServerSyncProvider>
-      <DataInitializer />
       <div className="flex min-h-screen" style={{ background: '#000' }}>
         <EcosystemSidebar />
 
