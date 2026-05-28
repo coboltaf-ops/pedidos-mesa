@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import { LOGO_BASE64 } from '@/shared/lib/logo-base64'
 import { InventarioSidebar } from '@/shared/components/inventario-sidebar'
 import { SidebarProvider } from '@/shared/context/sidebar-context'
 import { usePollingProductosComidas } from '@/features/inventario-comidas/hooks/use-polling-productos-comidas'
@@ -55,26 +56,25 @@ function InventarioComidasLayoutContent({ children }: { children: React.ReactNod
       {sidebarVisible && <InventarioSidebar onClose={() => setSidebarVisible(false)} />}
       <main style={{ flex: 1, marginLeft: sidebarVisible ? '256px' : '0', overflowY: 'auto', transition: 'margin-left 0.3s' }}>
         {!sidebarVisible && (
-          <button
-            onClick={() => setSidebarVisible(true)}
-            style={{
-              position: 'fixed',
-              top: '20px',
-              left: '20px',
-              padding: '14px 24px',
-              background: '#ea580c',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              zIndex: 50,
-              boxShadow: '0 4px 12px rgba(234, 88, 12, 0.3)',
-            }}
-          >
-            ☰ Regresar al Menú Principal
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'fixed', top: '20px', left: '20px', zIndex: 50 }}>
+            <img src={LOGO_BASE64} alt="SPIN" style={{ width: '48px', height: '48px' }} />
+            <button
+              onClick={() => setSidebarVisible(true)}
+              style={{
+                padding: '10px 16px',
+                background: '#ea580c',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                boxShadow: '0 4px 12px rgba(234, 88, 12, 0.3)',
+              }}
+            >
+              ☰ Menú
+            </button>
+          </div>
         )}
         {children}
       </main>
