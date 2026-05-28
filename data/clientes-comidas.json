@@ -1,37 +1,48 @@
 [
   {
-    "id": "local-final",
-    "nombre": "LOCAL FINAL",
-    "nro_documento": "777",
-    "nro_movil": "777",
-    "correo": "local@test.com",
+    "id": "cliente-1",
+    "nombre": "Cliente Inicial 1",
+    "nro_documento": "111",
+    "nro_movil": "3001111111",
+    "correo": "cliente1@test.com",
+    "tipo_cliente": "Persona Natural",
+    "tipo_identificacion": "CC",
+    "situacion": "Activo",
+    "nro_correlativo": 1
+  },
+  {
+    "id": "cliente-2",
+    "nombre": "Cliente Inicial 2",
+    "nro_documento": "222",
+    "nro_movil": "3002222222",
+    "correo": "cliente2@test.com",
     "tipo_cliente": "Persona Natural",
     "tipo_identificacion": "CC",
     "situacion": "Activo",
     "nro_correlativo": 2
   },
   {
-    "id": "df1871eb-b54e-4d63-960c-c550ddecee88",
+    "id": "66af58e0-08ea-4549-90e5-3d742bcaa303",
     "nro_correlativo": 3,
-    "fecha_creacion": "2026-05-27T23:29:11.799Z",
+    "fecha_creacion": "2026-05-28T02:17:19.111Z",
     "situacion": "Activo",
     "tipo_cliente": "Persona Natural",
     "tipo_identificacion": "CC",
-    "nombre": "FINAL_TEST_1779924550639",
-    "nro_documento": "9924550639",
-    "correo": "final1779924550639@test.com",
+    "nombre": "CLIENTE_PRUEBA_1",
+    "nro_documento": "123456",
+    "correo": "prueba1@test.com",
     "nro_movil": "3001234567"
   },
   {
-    "id": "f28c9f77-96bf-43ae-9f99-dff317df99ef",
+    "id": "16547ff6-f691-4e93-8a42-d5ca9f78852b",
     "nro_correlativo": 4,
-    "fecha_creacion": "2026-05-28T02:05:37.476Z",
+    "fecha_creacion": "2026-05-28T02:17:29.244Z",
     "situacion": "Activo",
     "tipo_cliente": "Persona Natural",
     "tipo_identificacion": "CC",
-    "nombre": "FINAL_TEST_1779933936319",
-    "nro_documento": "9933936319",
-    "correo": "final1779933936319@test.com",
-    "nro_movil": "3001234567"
+    "nombre": "CLIENTE_PRUEBA_2",
+    "nro_documento": "789012",
+    "correo": "prueba2@test.com",
+    "nro_movil": "3009876543"
   }
 ]

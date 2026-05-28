@@ -11,6 +11,7 @@ export default function ClientesComidasPage() {
   const setClientes = useClientesComidasStore((s) => s.setClientes)
   const [editing, setEditing] = useState<ClienteComida | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [viewingCliente, setViewingCliente] = useState<ClienteComida | null>(null)
   const [formData, setFormData] = useState<Partial<ClienteComida>>({
     situacion: 'Activo',
     tipo_cliente: 'Persona Natural',
@@ -160,7 +161,7 @@ export default function ClientesComidasPage() {
   }
 
   const handleViewDetails = (cliente: ClienteComida) => {
-    alert('Detalles de ' + cliente.nombre + '\n\nDocumento: ' + cliente.tipo_identificacion + ' ' + cliente.nro_documento + '\nCorreo: ' + cliente.correo + '\nTeléfono: ' + cliente.nro_movil + '\nUbicación: ' + (cliente.direccion || '-') + ', ' + (cliente.ciudad || '-') + ', ' + (cliente.pais || '-'))
+    setViewingCliente(cliente)
   }
 
   const handleOpenForm = () => {
@@ -626,6 +627,160 @@ export default function ClientesComidasPage() {
                   }}
                 >
                   CANCELAR
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {viewingCliente && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0,0,0,0.9)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+          >
+            <div
+              style={{
+                background: '#111',
+                padding: '40px',
+                borderRadius: '12px',
+                maxWidth: '700px',
+                width: '90%',
+                border: '2px solid #10b981',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+              }}
+            >
+              <h2 style={{ marginBottom: '20px', fontWeight: 'bold', color: '#10b981' }}>
+                👁️ Detalles del Cliente
+              </h2>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                    Tipo Cliente
+                  </label>
+                  <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                    {viewingCliente.tipo_cliente}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                    Nombre
+                  </label>
+                  <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff', fontWeight: 'bold' }}>
+                    {viewingCliente.nombre}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                    Tipo Identificación
+                  </label>
+                  <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                    {viewingCliente.tipo_identificacion}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                    Nro Documento
+                  </label>
+                  <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                    {viewingCliente.nro_documento}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                    Correo
+                  </label>
+                  <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                    {viewingCliente.correo}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                    Nro Móvil
+                  </label>
+                  <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                    {viewingCliente.nro_movil}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                  Dirección
+                </label>
+                <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                  {viewingCliente.direccion || '-'}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                    Ciudad/Población
+                  </label>
+                  <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                    {viewingCliente.ciudad || '-'}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                    Población
+                  </label>
+                  <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                    {viewingCliente.poblacion || '-'}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                    País
+                  </label>
+                  <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                    {viewingCliente.pais || '-'}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px', color: '#aaa' }}>
+                  Situación
+                </label>
+                <div style={{ padding: '10px', background: '#222', borderRadius: '6px', color: '#fff' }}>
+                  {viewingCliente.situacion}
+                </div>
+              </div>
+
+              <div>
+                <button
+                  onClick={() => setViewingCliente(null)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: '#10b981',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  CERRAR
                 </button>
               </div>
             </div>
