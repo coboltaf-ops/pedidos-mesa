@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   experimental: {
     mcpServer: true,
   },
+  // Force rebuild timestamp: 2026-05-27T23:30:00Z
 }
 
 export default withNextIntl(nextConfig)
