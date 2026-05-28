@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useEmpresaStore, type DatosEmpresa } from '@/features/datos-empresa/store/empresa-store'
 import { useReferenceStore } from '@/features/referencias/store/reference-store'
 import { usePermisos } from '@/shared/hooks/use-permisos'
@@ -29,7 +29,7 @@ export default function DatosEmpresaPage() {
   const tSec = useTranslations('sections')
   const tOp = useTranslations('options')
   const permisos = usePermisos('datos-empresa')
-  const { empresas, addEmpresa, updateEmpresa, deleteEmpresa } = useEmpresaStore()
+  const { empresas, addEmpresa, updateEmpresa, deleteEmpresa, isHydrated, hydrate } = useEmpresaStore()
   const refData = useReferenceStore(s => s.data)
 
   const [form, setForm] = useState<DatosEmpresa>(initForm())
@@ -38,6 +38,13 @@ export default function DatosEmpresaPage() {
   const [search, setSearch] = useState('')
   const [formError, setFormError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Ensure complete hydration on mount (including logos from IndexedDB)
+  useEffect(() => {
+    if (!isHydrated) {
+      hydrate()
+    }
+  }, [isHydrated, hydrate])
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -68,25 +75,13 @@ export default function DatosEmpresaPage() {
     if (!form.nombre.trim()) { setFormError('El nombre es obligatorio.'); return }
     const duplicate = empresas.some(r => r.id !== form.id && r.nombre.trim().toLowerCase() === form.nombre.trim().toLowerCase())
     if (duplicate) { setFormError(`Ya existe una empresa con el nombre "${form.nombre}".`); return }
-    if (form.id) { 
+    if (form.id) {
       updateEmpresa(form.id, { ...form })
-      console.log('✅ Guardando empresa:', form.nombre, 'Logo size:', form.logo?.length)
+      console.log('✅ Empresa actualizada:', form.nombre, 'Logo size:', form.logo?.length)
     }
     else { addEmpresa({ ...form, id: crypto.randomUUID() }) }
     setFormError('')
     setIsFormOpen(false)
-    // Verify save
-    setTimeout(() => {
-      const stored = localStorage.getItem('empresa-storage')
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          console.log('✅ Verificación: Data en localStorage:', parsed.state?.empresas?.[0]?.nombre)
-        } catch (e) {
-          console.error('❌ Error verificando localStorage:', e)
-        }
-      }
-    }, 100)
   }
 
   const handleEdit = (e: DatosEmpresa) => { setForm({ ...e }); setIsFormOpen(true) }

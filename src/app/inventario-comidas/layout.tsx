@@ -48,11 +48,14 @@ function DataLoadingHooks() {
 function InventarioComidasLayoutContent({ children }: { children: React.ReactNode }) {
   const empresaActiva = useEmpresaStore(s => s.empresas[0])
   const logoEmpresa = empresaActiva?.logo
+  const isHydrated = useEmpresaStore(s => s.isHydrated)
 
-  // Ensure store is hydrated on mount
+  // Ensure store is hydrated on mount (with logos from IndexedDB)
   useEffect(() => {
-    useEmpresaStore.getState().hydrate()
-  }, [])
+    if (!isHydrated) {
+      useEmpresaStore.getState().hydrate()
+    }
+  }, [isHydrated])
   const [sidebarVisible, setSidebarVisible] = useState(false)
   const pathname = usePathname()
 

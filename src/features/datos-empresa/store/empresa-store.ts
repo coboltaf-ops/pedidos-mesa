@@ -22,6 +22,7 @@ interface EmpresaState {
   updateEmpresa: (id: string, empresa: Partial<DatosEmpresa>) => void
   deleteEmpresa: (id: string) => void
   hydrate: () => void
+  isHydrated: boolean
 }
 
 const defaultEmpresa: DatosEmpresa = {
@@ -39,58 +40,124 @@ const defaultEmpresa: DatosEmpresa = {
   logo: '',
 }
 
+// Helper para guardar logo en IndexedDB (para Vercel)
+const saveLogoToIndexedDB = async (empresaId: string, logoData: string): Promise<void> => {
+  if (typeof window === 'undefined' || !logoData) return
+
+  try {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('empresa-db', 1)
+      request.onupgradeneeded = () => {
+        const db = request.result
+        if (!db.objectStoreNames.contains('logos')) {
+          db.createObjectStore('logos', { keyPath: 'id' })
+        }
+      }
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+
+    const tx = db.transaction('logos', 'readwrite')
+    const store = tx.objectStore('logos')
+    store.put({ id: empresaId, logo: logoData, timestamp: Date.now() })
+
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    })
+
+    console.log('✅ Logo guardado en IndexedDB para empresa:', empresaId)
+  } catch (e) {
+    console.warn('⚠️ IndexedDB no disponible, usando localStorage como fallback:', e)
+  }
+}
+
+// Helper para cargar logo desde IndexedDB
+const loadLogoFromIndexedDB = async (empresaId: string): Promise<string | null> => {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('empresa-db', 1)
+      request.onupgradeneeded = () => {
+        const db = request.result
+        if (!db.objectStoreNames.contains('logos')) {
+          db.createObjectStore('logos', { keyPath: 'id' })
+        }
+      }
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+
+    const tx = db.transaction('logos', 'readonly')
+    const store = tx.objectStore('logos')
+
+    return new Promise((resolve) => {
+      const request = store.get(empresaId)
+      request.onsuccess = () => {
+        const result = request.result
+        resolve(result?.logo || null)
+      }
+      request.onerror = () => resolve(null)
+    })
+  } catch (e) {
+    console.warn('⚠️ Error leyendo logo desde IndexedDB:', e)
+    return null
+  }
+}
+
 export const useEmpresaStore = create<EmpresaState>()(
   persist(
     (set, get) => ({
       empresas: [defaultEmpresa],
+      isHydrated: false,
       addEmpresa: (empresa) => {
         const newState = [empresa]
         set({ empresas: newState })
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('empresa-storage', JSON.stringify({ state: { empresas: newState }, version: 1 }))
+
+        // Save logo separately to IndexedDB if present
+        if (empresa.logo) {
+          saveLogoToIndexedDB(empresa.id, empresa.logo)
         }
       },
       updateEmpresa: (id, empresaUpdate) => {
-        // Update state FIRST, get the updated value, THEN save to localStorage
         const currentEmpresas = get().empresas
         const updated = currentEmpresas.map((e) =>
           e.id === id ? { ...e, ...empresaUpdate } : e
         )
-        
-        // Update state
+
         set({ empresas: updated })
-        
-        // Immediately save to localStorage (synchronously)
-        if (typeof window !== 'undefined') {
-          try {
-            const toSave = JSON.stringify({ state: { empresas: updated }, version: 1 })
-            localStorage.setItem('empresa-storage', toSave)
-            console.log('✅ Logo guardado en localStorage:', { id, nombre: updated[0]?.nombre, logoSize: updated[0]?.logo?.length })
-          } catch (e) {
-            console.error('❌ Error guardando en localStorage:', e)
-          }
+
+        // Save logo separately to IndexedDB if present
+        const updatedEmpresa = updated.find(e => e.id === id)
+        if (updatedEmpresa?.logo) {
+          saveLogoToIndexedDB(id, updatedEmpresa.logo)
+          console.log('✅ Logo actualizado:', { id, nombre: updatedEmpresa.nombre, logoSize: updatedEmpresa.logo.length })
         }
       },
       deleteEmpresa: (id) =>
         set((state) => ({
           empresas: state.empresas.filter((e) => e.id !== id),
         })),
-      hydrate: () => {
-        if (typeof window !== 'undefined') {
-          const stored = localStorage.getItem('empresa-storage')
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored)
-              if (parsed.state?.empresas && Array.isArray(parsed.state.empresas)) {
-                set({ empresas: parsed.state.empresas })
-                console.log('✅ Store hidratado desde localStorage:', parsed.state.empresas)
-              }
-            } catch (e) {
-              console.error('❌ Error hidratando empresa store:', e)
-            }
-          } else {
-            console.warn('⚠️ No hay datos en localStorage')
-          }
+      hydrate: async () => {
+        if (typeof window === 'undefined') return
+
+        try {
+          const state = get()
+
+          // Load logos from IndexedDB and restore to state
+          const empresasWithLogos = await Promise.all(
+            state.empresas.map(async (empresa) => {
+              const logo = await loadLogoFromIndexedDB(empresa.id)
+              return { ...empresa, logo: logo || empresa.logo }
+            })
+          )
+
+          set({ empresas: empresasWithLogos, isHydrated: true })
+          console.log('✅ Store hidratado completamente (con logos desde IndexedDB)')
+        } catch (e) {
+          console.error('❌ Error en hidratación completa:', e)
+          set({ isHydrated: true })
         }
       },
     }),
@@ -100,9 +167,16 @@ export const useEmpresaStore = create<EmpresaState>()(
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state?.empresas) {
-          console.log('🔧 Store Zustand rehydrated:', state.empresas[0]?.nombre)
+          console.log('🔧 Store Zustand rehydrated (localStorage):', state.empresas[0]?.nombre)
         }
       },
+      // IMPORTANTE: No persistir logos en localStorage (muy grandes), solo en IndexedDB
+      partialize: (state) => ({
+        empresas: state.empresas.map(({ logo, ...rest }) => ({
+          ...rest,
+          logo: '' // Siempre vacío en localStorage, cargado desde IndexedDB en hydrate()
+        })),
+      }),
     }
   )
 )
